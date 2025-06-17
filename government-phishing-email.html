@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail - 請盡快填寫，會議議程表。（個人版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Microsoft JhengHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f6f8fc;
+            color: #202124;
+            line-height: 1.5;
+        }
+        
+        /* 瀏覽器框架樣式 */
+        .browser-frame {
+            background-color: #f1f3f4;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            margin: 20px auto 0;
+            width: 90%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+        
+        .browser-header {
+            background-color: #dee1e6;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .browser-buttons {
+            display: flex;
+            align-items: center;
+            margin-right: 16px;
+        }
+        
+        .browser-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .browser-button.red {
+            background-color: #ff5f57;
+        }
+        
+        .browser-button.yellow {
+            background-color: #febc2e;
+        }
+        
+        .browser-button.green {
+            background-color: #28c840;
+        }
+        
+        .browser-tabs {
+            display: flex;
+            align-items: center;
+            margin-bottom: -1px;
+        }
+        
+        .browser-tab {
+            background-color: #f1f3f4;
+            padding: 8px 16px;
+            border-radius: 8px 8px 0 0;
+            margin-right: 2px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            max-width: 200px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            border: 1px solid #dee1e6;
+            border-bottom: none;
+        }
+        
+        .browser-tab.active {
+            background-color: white;
+        }
+        
+        .browser-tab img {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+        
+        .browser-address-bar {
+            flex: 1;
+            background-color: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            height: 36px;
+            margin: 8px 16px 8px 0;
+        }
+        
+        .browser-address-icon {
+            color: #626365;
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .browser-address-text {
+            flex: 1;
+            font-size: 14px;
+            color: #202124;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .browser-icons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .browser-icon {
+            color: #626365;
+            margin-left: 16px;
+            font-size: 16px;
+        }
+        
+        .browser-content {
+            background-color: white;
+            padding: 0;
+            height: 600px;
+            overflow-y: auto;
+        }
+        
+        /* Gmail樣式 */
+        .gmail-header {
+            background-color: white;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .gmail-logo {
+            height: 40px;
+            margin-right: 16px;
+        }
+        
+        .gmail-search {
+            flex: 1;
+            background-color: #f1f3f4;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin: 0 16px;
+            font-size: 14px;
+            color: #5f6368;
+        }
+        
+        .gmail-icons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .gmail-icon {
+            color: #5f6368;
+            margin-left: 16px;
+            font-size: 20px;
+        }
+        
+        .gmail-user {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #1a73e8;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 16px;
+        }
+        
+        .gmail-container {
+            display: flex;
+            height: calc(100% - 57px);
+        }
+        
+        .gmail-sidebar {
+            width: 256px;
+            padding: 8px 0;
+            border-right: 1px solid #f1f3f4;
+        }
+        
+        .gmail-compose {
+            margin: 8px 8px 16px 8px;
+            padding: 12px 24px 12px 16px;
+            background-color: #c2e7ff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .gmail-compose i {
+            margin-right: 12px;
+        }
+        
+        .gmail-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 24px 8px 26px;
+            cursor: pointer;
+        }
+        
+        .gmail-menu-item.active {
+            background-color: #d3e3fd;
+            font-weight: 500;
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        
+        .gmail-menu-item i {
+            margin-right: 16px;
+            color: #5f6368;
+            font-size: 18px;
+        }
+        
+        .gmail-menu-item.active i {
+            color: #1a73e8;
+        }
+        
+        .gmail-menu-item-text {
+            flex: 1;
+        }
+        
+        .gmail-menu-item-count {
+            font-size: 12px;
+            color: #5f6368;
+        }
+        
+        .gmail-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .gmail-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .gmail-toolbar-icon {
+            color: #5f6368;
+            margin-right: 16px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .gmail-toolbar-pagination {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            color: #5f6368;
+            font-size: 12px;
+        }
+        
+        .gmail-toolbar-pagination-text {
+            margin: 0 16px;
+        }
+        
+        .gmail-email {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .gmail-email-header {
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .gmail-email-subject {
+            font-size: 22px;
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+        
+        .gmail-email-details {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .gmail-email-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #dadce0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: #5f6368;
+            font-size: 20px;
+        }
+        
+        .gmail-email-info {
+            flex: 1;
+        }
+        
+        .gmail-email-sender {
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .gmail-email-sender-address {
+            font-weight: normal;
+            color: #5f6368;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        
+        .gmail-email-recipients {
+            color: #5f6368;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .gmail-email-date {
+            color: #5f6368;
+            font-size: 13px;
+            text-align: right;
+        }
+        
+        .gmail-email-actions {
+            display: flex;
+            margin-top: 8px;
+        }
+        
+        .gmail-email-action {
+            color: #5f6368;
+            margin-right: 16px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .gmail-email-body {
+            padding: 16px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .gmail-email-footer {
+            color: #5f6368;
+            font-size: 13px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f3f4;
+        }
+        
+        .gmail-email-link {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .gmail-email-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 釣魚指標相關樣式 */
+        .phishing-indicator {
+            cursor: pointer;
+            border-bottom: 1px dotted #888;
+        }
+        
+        /* 釣魚指標提示彈窗 */
+        .phishing-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 90%;
+            z-index: 1000;
+        }
+        
+        .phishing-popup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .phishing-popup-icon {
+            color: #ea4335;
+            font-size: 24px;
+            margin-right: 12px;
+        }
+        
+        .phishing-popup-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ea4335;
+        }
+        
+        .phishing-popup-content {
+            margin-bottom: 16px;
+        }
+        
+        .phishing-popup-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .phishing-popup-button {
+            padding: 8px 16px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .found-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 998;
+            font-weight: 500;
+        }
+        
+        .found-counter-progress {
+            color: #1a73e8;
+            font-weight: bold;
+        }
+        
+        .found-counter-total {
+            color: #5f6368;
+        }
+        
+        .complete-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #e6f4ea;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 90%;
+            z-index: 1001;
+            text-align: center;
+        }
+        
+        .complete-message-icon {
+            color: #137333;
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .complete-message-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: #137333;
+            margin-bottom: 12px;
+        }
+        
+        .complete-message-content {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        .complete-message-button {
+            padding: 10px 24px;
+            background-color: #137333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- 釣魚指標計數器 -->
+    <div class="found-counter">
+        找到釣魚指標：<span class="found-counter-progress">0</span>/<span class="found-counter-total">7</span>
+    </div>
+    
+    <!-- 完成訊息 -->
+    <div class="complete-message" id="completeMessage">
+        <div class="complete-message-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="complete-message-title">
+            恭喜！您已找出所有釣魚指標
+        </div>
+        <div class="complete-message-content">
+            您已成功識別出這封政府單位釣魚郵件的所有可疑之處。保持這種警覺性能有效保護您的個人資訊安全！
+        </div>
+        <button class="complete-message-button" onclick="resetExercise()">
+            重新開始
+        </button>
+    </div>
+    
+    <!-- 釣魚指標彈窗 -->
+    <div class="overlay" id="overlay"></div>
+    <div class="phishing-popup" id="phishingPopup">
+        <div class="phishing-popup-header">
+            <div class="phishing-popup-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="phishing-popup-title" id="popupTitle">
+                釣魚指標
+            </div>
+        </div>
+        <div class="phishing-popup-content" id="popupContent">
+            這是釣魚郵件的特徵之一。
+        </div>
+        <div class="phishing-popup-footer">
+            <button class="phishing-popup-button" onclick="closePopup()">
+                了解
+            </button>
+        </div>
+    </div>
+    
+    <!-- 瀏覽器框架 -->
+    <div class="browser-frame">
+        <div class="browser-header">
+            <div class="browser-buttons">
+                <div class="browser-button red"></div>
+                <div class="browser-button yellow"></div>
+                <div class="browser-button green"></div>
+            </div>
+            
+            <div class="browser-tabs">
+                <div class="browser-tab active">
+                    <i class="fab fa-google" style="color: #4285f4; margin-right: 8px;"></i>
+                    Gmail - 請盡快填寫，會議議程表。（個人版）
+                </div>
+            </div>
+            
+            <div class="browser-address-bar">
+                <div class="browser-address-icon">
+                    <i class="fas fa-lock" style="color: #0f9d58;"></i>
+                </div>
+                <div class="browser-address-text">
+                    <span>https://mail.google.com/mail/u/0/#inbox</span>
+                </div>
+            </div>
+            
+            <div class="browser-icons">
+                <div class="browser-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="browser-icon">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="browser-content">
+            <div class="gmail-header">
+                <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/logo_gmail_lockup_default_1x_r5.png" alt="Gmail" class="gmail-logo">
+                <div class="gmail-search">搜尋郵件</div>
+                <div class="gmail-icons">
+                    <i class="fas fa-cog gmail-icon"></i>
+                    <i class="fas fa-th gmail-icon"></i>
+                    <div class="gmail-user">我</div>
+                </div>
+            </div>
+            
+            <div class="gmail-container">
+                <div class="gmail-sidebar">
+                    <div class="gmail-compose">
+                        <i class="fas fa-plus"></i>
+                        撰寫郵件
+                    </div>
+                    
+                    <div class="gmail-menu-item active">
+                        <i class="fas fa-inbox"></i>
+                        <div class="gmail-menu-item-text">收件匣</div>
+                        <div class="gmail-menu-item-count">5</div>
+                    </div>
+                    
+                    <div class="gmail-menu-item">
+                        <i class="fas fa-star"></i>
+                        <div class="gmail-menu-item-text">已加星號</div>
+                    </div>
+                    
+                    <div class="gmail-menu-item">
+                        <i class="fas fa-clock"></i>
+                        <div class="gmail-menu-item-text">已延後</div>
+                    </div>
+                    
+                    <div class="gmail-menu-item">
+                        <i class="fas fa-paper-plane"></i>
+                        <div class="gmail-menu-item-text">已傳送</div>
+                    </div>
+                    
+                    <div class="gmail-menu-item">
+                        <i class="fas fa-file"></i>
+                        <div class="gmail-menu-item-text">草稿</div>
+                        <div class="gmail-menu-item-count">2</div>
+                    </div>
+                </div>
+                
+                <div class="gmail-content">
+                    <div class="gmail-toolbar">
+                        <i class="fas fa-arrow-left gmail-toolbar-icon"></i>
+                        <i class="fas fa-archive gmail-toolbar-icon"></i>
+                        <i class="fas fa-trash-alt gmail-toolbar-icon"></i>
+                        <i class="fas fa-envelope gmail-toolbar-icon"></i>
+                        <i class="fas fa-clock gmail-toolbar-icon"></i>
+                        
+                        <div class="gmail-toolbar-pagination">
+                            <i class="fas fa-chevron-left gmail-toolbar-icon"></i>
+                            <div class="gmail-toolbar-pagination-text">1 / 5</div>
+                            <i class="fas fa-chevron-right gmail-toolbar-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="gmail-email">
+                        <div class="gmail-email-header">
+                            <h1 class="gmail-email-subject phishing-indicator" data-id="1" onclick="showPopup(1)">請盡快填寫，會議議程表。（個人版）</h1>
+                            
+                            <div class="gmail-email-details">
+                                <div class="gmail-email-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                
+                                <div class="gmail-email-info">
+                                    <div class="gmail-email-sender">
+                                        總統府 <span class="gmail-email-sender-address phishing-indicator" data-id="2" onclick="showPopup(2)">publi@mail.oop.gov.tw</span>
+                                        <span class="gmail-email-sender-address phishing-indicator" data-id="3" onclick="showPopup(3)">透過 smtpservice.net</span>
+                                    </div>
+                                    <div class="gmail-email-recipients">
+                                        寄給我
+                                    </div>
+                                </div>
+                                
+                                <div class="gmail-email-date">
+                                    6月11日 上午9:45
+                                </div>
+                            </div>
+                            
+                            <div class="gmail-email-actions">
+                                <i class="fas fa-reply gmail-email-action"></i>
+                                <i class="fas fa-reply-all gmail-email-action"></i>
+                                <i class="fas fa-share gmail-email-action"></i>
+                                <i class="fas fa-ellipsis-v gmail-email-action"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="gmail-email-body">
+                            <p class="phishing-indicator" data-id="4" onclick="showPopup(4)">請在今天15:00之前填寫表格並發送給我們。在表格中提供你的聯繫電話，否則無法聯繫到你</p>
+                            <p style="margin-top: 16px;">
+                                <a href="#" class="gmail-email-link phishing-indicator" data-id="5" onclick="showPopup(5)">http://conference.outlook-offices.com/email/xls/conference-2020.docx.zip</a>
+                            </p>
+                            <p style="margin-top: 8px;" class="phishing-indicator" data-id="6" onclick="showPopup(6)">password:taiwan</p>
+                            
+                            <div class="gmail-email-footer" style="margin-top: 40px;">
+                                <p>中華民國總統府地址：10048</p>
+                                <p>臺北市中正區重慶南路1段122號（交通位置）</p>
+                                <p class="phishing-indicator" data-id="7" onclick="showPopup(7)">總機：（02）2311-3711</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 釣魚指標資料
+        const phishingIndicators = {
+            1: {
+                title: "緊急性與時間壓力術",
+                content: "「請盡快填寫」這種急迫的標題是釣魚郵件常用的手法，目的是讓收件人在壓力下快速回應，沒有時間思考或檢查郵件的真實性。政府機關的正式信件通常不會使用這種緊急語氣，特別是對於一般會議議程表的填寫。"
+            },
+            2: {
+                title: "可疑的政府郵件地址",
+                content: "真正的台灣總統府電子郵件域名是'president.gov.tw'，而非'mail.oop.gov.tw'。注意'oop'這個可疑的子域名，這不是台灣政府機構的標準命名方式。此外，公開性質的政府聯繫郵件通常會使用部門名稱而非'publi'這種不明確的縮寫。"
+            },
+            3: {
+                title: "透過非官方郵件服務發送",
+                content: "'透過 smtpservice.net'表明這封郵件是通過第三方郵件服務發送的，而非直接從政府郵件伺服器發出。政府機關的官方信件應該直接從其官方郵件伺服器發送，不會透過第三方郵件服務。這是明確的釣魚郵件跡象。"
+            },
+            4: {
+                title: "催促行動與威脅語氣",
+                content: "「請在今天15:00之前填寫表格」以及「否則無法聯繫到你」這種帶有最後期限和威脅的語言是典型的釣魚郵件特徵。這種策略旨在迫使收件人匆忙行動，而非仔細考慮郵件的合法性。政府機關的正式通訊會提供合理的回應時間，且語氣更為正式和尊重。"
+            },
+            5: {
+                title: "可疑的下載連結",
+                content: "這個URL有多個可疑特徵：1) 使用'conference.outlook-offices.com'而非官方政府網站域名；2) 包含'outlook-offices'似乎在模仿微軟的服務但不是真實的微軟域名；3) 檔案路徑包含多種格式混合（xls/docx.zip），這在正規文件中極為不常見；4) 檔案名包含'2020'年份，但現在已是2025年。政府文件通常託管在政府網域上，使用加密的HTTPS連接，並有清晰的檔案格式。"
+            },
+            6: {
+                title: "公開提供密碼",
+                content: "在電子郵件中明確提供密碼'password:taiwan'是不安全的做法，特別是對於政府文件。安全的做法是通過加密門戶或單獨的安全通道提供敏感文件，或使用收件人已知的身份驗證方式。在公開郵件中提供密碼顯示這可能是為了讓受害者能夠打開可能含有惡意軟體的附件。"
+            },
+            7: {
+                title: "使用公開可查詢的聯繫資訊",
+                content: "郵件底部包含總統府的真實地址和總機電話，這些是公開資訊，任何人都可以從網上查到。釣魚郵件常常使用真實的公開聯繫資訊來增加可信度，但這並不能證明郵件來源的真實性。注意郵件中沒有提供特定部門或負責人的直接聯繫方式，這在真正的政府公務通訊中是不尋常的。"
+            }
+        };
+        
+        // 已找到的釣魚指標
+        const foundIndicators = {};
+        let foundCount = 0;
+        const totalIndicators = Object.keys(phishingIndicators).length;
+        
+        // 更新找到的指標計數
+        function updateCounter() {
+            document.querySelector('.found-counter-progress').textContent = foundCount;
+            document.querySelector('.found-counter-total').textContent = totalIndicators;
+            
+            // 如果找到所有指標，顯示完成訊息
+            if (foundCount === totalIndicators) {
+                document.getElementById('completeMessage').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+        }
+        
+        // 初始化計數器
+        updateCounter();
+        
+        // 顯示釣魚指標彈窗
+        function showPopup(id) {
+            const indicator = phishingIndicators[id];
+            document.getElementById('popupTitle').textContent = indicator.title;
+            document.getElementById('popupContent').textContent = indicator.content;
+            document.getElementById('phishingPopup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+            
+            // 如果是新找到的指標，增加計數
+            if (!foundIndicators[id]) {
+                foundIndicators[id] = true;
+                foundCount++;
+                updateCounter();
+                
+                // 標記已找到的指標
+                const elements = document.querySelectorAll(`[data-id="${id}"]`);
+                elements.forEach(el => {
+                    el.style.backgroundColor = '#ffebee';
+                    el.style.borderBottom = 'none';
+                });
+            }
+        }
+        
+        // 關閉彈窗
+        function closePopup() {
+            document.getElementById('phishingPopup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+        
+        // 重置練習
+        function resetExercise() {
+            // 重置計數和標記
+            foundCount = 0;
+            for (const id in foundIndicators) {
+                foundIndicators[id] = false;
+                
+                // 移除標記
+                const elements = document.querySelectorAll(`[data-id="${id}"]`);
+                elements.forEach(el => {
+                    el.style.backgroundColor = '';
+                    el.style.borderBottom = '1px dotted #888';
+                });
+            }
+            
+            // 更新計數器
+            updateCounter();
+            
+            // 關閉完成訊息
+            document.getElementById('completeMessage').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+        
+        // 其他元素點擊事件
+        document.querySelectorAll('i:not(.phishing-indicator), img, .gmail-search, .gmail-compose, .gmail-menu-item, .gmail-toolbar-icon, .gmail-toolbar-pagination, .gmail-toolbar-pagination-text').forEach(element => {
+            element.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('這是模擬畫面，只有標示的釣魚指標可以點擊。真實釣魚郵件可能會竊取您輸入的資訊。');
+            });
+        });
+    </script>
+</body>
+</html>
