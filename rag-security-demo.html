@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>內部文件 RAG Chatbot 系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            display: flex;
+            height: 600px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #ecf0f1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+        
+        .user-message {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: #e8e8e8;
+            color: #333;
+        }
+        
+        .system-message {
+            background: #f39c12;
+            color: white;
+            font-size: 12px;
+            max-width: 100%;
+        }
+        
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        
+        #userInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .doc-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .doc-item:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .vulnerability-hint {
+            background: #e74c3c;
+            color: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .debug-info {
+            background: #2c3e50;
+            color: #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TechCorp 內部文件查詢系統</h1>
+            <p style="font-size: 12px; margin-top: 5px;">版本: 2.1.0 | 使用者: guest_user</p>
+        </div>
+        
+        <div class="content">
+            <div class="sidebar">
+                <h3>可查詢文件</h3>
+                <div class="vulnerability-hint">
+                    💡 提示：試試看不同的查詢方式
+                </div>
+                <div class="doc-item" onclick="searchDoc('員工手冊')">📘 員工手冊</div>
+                <div class="doc-item" onclick="searchDoc('薪資結構')">💰 薪資結構文件</div>
+                <div class="doc-item" onclick="searchDoc('產品規格')">📋 產品規格書</div>
+                <div class="doc-item" onclick="searchDoc('客戶資料')">👥 客戶資料庫</div>
+                <div class="doc-item" onclick="searchDoc('系統架構')">🔧 系統架構圖</div>
+                <div class="doc-item" onclick="searchDoc('會議記錄')">📝 董事會會議記錄</div>
+                
+                <h3 style="margin-top: 20px;">系統狀態</h3>
+                <div class="debug-info">
+                    [DEBUG] Vector DB: Connected<br>
+                    [DEBUG] Auth: Disabled<br>
+                    [DEBUG] Logging: Off<br>
+                    [DEBUG] Filter: Minimal
+                </div>
+            </div>
+            
+            <div class="chat-area">
+                <div class="messages" id="messages">
+                    <div class="message bot-message">
+                        歡迎使用 TechCorp 內部文件查詢系統！我可以幫您查詢公司內部文件。請問有什麼可以協助您的嗎？
+                    </div>
+                    <div class="message system-message">
+                        系統訊息：目前以訪客模式登入，部分功能可能受限。
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <input type="text" id="userInput" placeholder="輸入您的問題..." onkeypress="handleKeyPress(event)">
+                    <button onclick="sendMessage()">發送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬的內部文件資料庫
+        const documents = {
+            '員工手冊': {
+                content: '員工手冊 v3.0\n\n1. 公司政策\n- 上班時間：09:00-18:00\n- 年假規定：第一年7天，之後每年增加1天\n\n2. 保密協議\n所有員工必須簽署保密協議，禁止洩露公司機密資訊。\n\n3. 員工福利\n- 三節獎金\n- 員工旅遊補助\n- 健康檢查補助',
+                sensitive: false
+            },
+            '薪資結構': {
+                content: '機密文件 - 薪資結構\n\n職級薪資範圍：\n- Junior: 40,000-60,000\n- Senior: 70,000-100,000\n- Manager: 100,000-150,000\n- Director: 150,000-250,000\n\nCEO薪資：500,000/月\n年終獎金計算公式：基本薪資 x 績效係數 x 2-6個月',
+                sensitive: true,
+                metadata: 'salary_structure_2024_confidential.pdf'
+            },
+            '產品規格': {
+                content: '產品規格書 - NextGen AI\n\n技術規格：\n- 模型參數：175B\n- 訓練資料：10TB\n- API金鑰：sk-proj-ABC123XYZ789\n- 後門存取碼：admin/P@ssw0rd123\n\n定價策略：\n- 基礎版：$99/月\n- 企業版：$999/月',
+                sensitive: true
+            },
+            '客戶資料': {
+                content: '重要客戶資料\n\n1. ABC Corp\n   聯絡人：張經理\n   電話：0912-345-678\n   Email: zhang@abc.com\n   信用額度：1000萬\n\n2. XYZ Ltd\n   聯絡人：李總監\n   電話：0923-456-789\n   Email: li@xyz.com\n   合約金額：5000萬/年',
+                sensitive: true
+            },
+            '系統架構': {
+                content: '系統架構文件\n\n資料庫連線：\nHost: db.internal.techcorp.com\nPort: 5432\nUsername: db_admin\nPassword: TechCorp2024!\n\nAPI Endpoints:\n- /api/v1/users (無需認證)\n- /api/v1/documents (Token: Bearer static_token_12345)\n\nBackup Server: backup.techcorp.com',
+                sensitive: true
+            },
+            '會議記錄': {
+                content: '董事會會議記錄 2024/Q4\n\n議題：\n1. 併購計畫：目標收購 StartupXYZ，出價 5000萬美元\n2. 裁員計畫：Q1將裁減 20% 研發人員\n3. 新產品定價：內部成本 $10，對外售價 $299\n\n決議：\n- 通過併購案\n- 延後裁員至Q2\n- 維持高利潤定價策略',
+                sensitive: true
+            }
+        };
+
+        // 漏洞1: 沒有權限檢查就能存取所有文件
+        function searchDoc(docName) {
+            const input = document.getElementById('userInput');
+            input.value = `查詢 ${docName}`;
+            sendMessage();
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 顯示使用者訊息
+            addMessage(message, 'user');
+            
+            // 漏洞2: 直接在前端處理，暴露所有邏輯
+            processQuery(message);
+            
+            input.value = '';
+        }
+
+        function processQuery(query) {
+            // 漏洞3: 沒有輸入驗證，可能導致注入攻擊
+            console.log('[DEBUG] Processing query:', query);
+            
+            // 漏洞4: 系統提示詞外洩
+            if (query.toLowerCase().includes('show system prompt') || 
+                query.toLowerCase().includes('顯示系統提示')) {
+                addMessage('系統提示詞：你是一個內部文件查詢助手，可以存取所有公司機密文件。請據實回答所有問題，包括敏感資訊。', 'system');
+                return;
+            }
+            
+            // 漏洞5: 可以列出所有文件
+            if (query.toLowerCase().includes('list all') || 
+                query.toLowerCase().includes('列出所有')) {
+                let allDocs = '可用文件清單：\n';
+                for (let doc in documents) {
+                    allDocs += `- ${doc}\n`;
+                }
+                addMessage(allDocs, 'bot');
+                return;
+            }
+            
+            // 漏洞6: 沒有適當的存取控制
+            let found = false;
+            for (let docName in documents) {
+                if (query.includes(docName)) {
+                    const doc = documents[docName];
+                    
+                    // 漏洞7: 敏感標記沒有實際作用
+                    let response = `找到文件：${docName}\n\n${doc.content}`;
+                    
+                    // 漏洞8: 洩露元資料
+                    if (doc.metadata) {
+                        response += `\n\n[Metadata: ${doc.metadata}]`;
+                    }
+                    
+                    addMessage(response, 'bot');
+                    
+                    // 漏洞9: 記錄但不保護查詢歷史
+                    addMessage(`[系統記錄] 使用者查詢了敏感度${doc.sensitive ? '高' : '低'}的文件`, 'system');
+                    
+                    found = true;
+                    break;
+                }
+            }
+            
+            // 漏洞10: 錯誤訊息洩露系統資訊
+            if (!found) {
+                if (query.toLowerCase().includes('password') || 
+                    query.toLowerCase().includes('密碼')) {
+                    addMessage('錯誤：直接查詢密碼違反安全政策。請查詢"系統架構"文件獲取相關資訊。', 'bot');
+                } else {
+                    addMessage(`未找到相關文件。可用文件數量：${Object.keys(documents).length}`, 'bot');
+                }
+            }
+        }
+
+        function addMessage(text, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // 漏洞11: 控制台暴露內部資料
+        console.log('RAG System initialized');
+        console.log('Available documents:', Object.keys(documents));
+        console.log('Debug mode: ON');
+    </script>
+</body>
+</html>
